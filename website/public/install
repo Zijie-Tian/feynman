@@ -32,12 +32,20 @@ download_file() {
   output="$2"
 
   if command -v curl >/dev/null 2>&1; then
-    curl -fsSL "$url" -o "$output"
+    if [ -t 2 ]; then
+      curl -fL --progress-bar "$url" -o "$output"
+    else
+      curl -fsSL "$url" -o "$output"
+    fi
     return
   fi
 
   if command -v wget >/dev/null 2>&1; then
-    wget -q -O "$output" "$url"
+    if [ -t 2 ]; then
+      wget --show-progress -O "$output" "$url"
+    else
+      wget -q -O "$output" "$url"
+    fi
     return
   fi
 
@@ -174,13 +182,16 @@ cleanup() {
 trap cleanup EXIT INT TERM
 
 archive_path="$tmp_dir/$archive_name"
+step "Downloading ${archive_name}"
 download_file "$download_url" "$archive_path"
 
 mkdir -p "$INSTALL_APP_DIR"
 rm -rf "$INSTALL_APP_DIR/$bundle_name"
+step "Extracting ${archive_name}"
 tar -xzf "$archive_path" -C "$INSTALL_APP_DIR"
 
 mkdir -p "$INSTALL_BIN_DIR"
+step "Linking feynman into $INSTALL_BIN_DIR"
 cat >"$INSTALL_BIN_DIR/feynman" <<EOF
 #!/bin/sh
 set -eu

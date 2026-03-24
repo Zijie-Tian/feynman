@@ -44,6 +44,7 @@ New-Item -ItemType Directory -Path $tmpDir | Out-Null
 
 try {
   $archivePath = Join-Path $tmpDir $archiveName
+  Write-Host "==> Downloading $archiveName"
   Invoke-WebRequest -Uri $downloadUrl -OutFile $archivePath
 
   New-Item -ItemType Directory -Path $installRoot -Force | Out-Null
@@ -51,11 +52,13 @@ try {
     Remove-Item -Recurse -Force $bundleDir
   }
 
+  Write-Host "==> Extracting $archiveName"
   Expand-Archive -LiteralPath $archivePath -DestinationPath $installRoot -Force
 
   New-Item -ItemType Directory -Path $installBinDir -Force | Out-Null
 
   $shimPath = Join-Path $installBinDir "feynman.cmd"
+  Write-Host "==> Linking feynman into $installBinDir"
   @"
 @echo off
 "$bundleDir\feynman.cmd" %*
