@@ -13,25 +13,41 @@ function fail(message) {
 	process.exit(1);
 }
 
+function resolveCommand(command) {
+	if (process.platform === "win32" && command === "npm") {
+		return "npm.cmd";
+	}
+
+	return command;
+}
+
 function run(command, args, options = {}) {
-	const result = spawnSync(command, args, {
+	const resolvedCommand = resolveCommand(command);
+	const result = spawnSync(resolvedCommand, args, {
 		stdio: "inherit",
 		...options,
 	});
+	if (result.error) {
+		fail(`${resolvedCommand} ${args.join(" ")} failed: ${result.error.message}`);
+	}
 	if (result.status !== 0) {
-		fail(`${command} ${args.join(" ")} failed with code ${result.status ?? 1}`);
+		fail(`${resolvedCommand} ${args.join(" ")} failed with code ${result.status ?? 1}`);
 	}
 }
 
 function runCapture(command, args, options = {}) {
-	const result = spawnSync(command, args, {
+	const resolvedCommand = resolveCommand(command);
+	const result = spawnSync(resolvedCommand, args, {
 		encoding: "utf8",
 		stdio: ["ignore", "pipe", "pipe"],
 		...options,
 	});
+	if (result.error) {
+		fail(`${resolvedCommand} ${args.join(" ")} failed: ${result.error.message}`);
+	}
 	if (result.status !== 0) {
 		const errorOutput = result.stderr?.trim() || result.stdout?.trim() || "unknown error";
-		fail(`${command} ${args.join(" ")} failed: ${errorOutput}`);
+		fail(`${resolvedCommand} ${args.join(" ")} failed: ${errorOutput}`);
 	}
 	return result.stdout.trim();
 }
