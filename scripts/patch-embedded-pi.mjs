@@ -363,15 +363,13 @@ const oauthPagePath = piAiRoot ? resolve(piAiRoot, "dist", "utils", "oauth", "oa
 
 if (oauthPagePath && existsSync(oauthPagePath)) {
 	let source = readFileSync(oauthPagePath, "utf8");
-	const piLogo = 'const LOGO_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 800" aria-hidden="true"><path fill="#fff" fill-rule="evenodd" d="M165.29 165.29 H517.36 V400 H400 V517.36 H282.65 V634.72 H165.29 Z M282.65 282.65 V400 H400 V282.65 Z"/><path fill="#fff" d="M517.36 400 H634.72 V634.72 H517.36 Z"/></svg>`;';
-	if (source.includes(piLogo)) {
-		const feynmanLogo = `const LOGO_SVG = \`${FEYNMAN_LOGO_HTML}\`;`;
-		source = source.replace(piLogo, feynmanLogo);
-		source = source.replaceAll("Authentication successful", "Logged in");
-		source = source.replaceAll("Authentication failed", "Login failed");
-		source = source.replace("You can close this window.", "You can close this tab.");
-		writeFileSync(oauthPagePath, source, "utf8");
+	let changed = false;
+	const target = `const LOGO_SVG = \`${FEYNMAN_LOGO_HTML}\`;`;
+	if (!source.includes(target)) {
+		source = source.replace(/const LOGO_SVG = `[^`]*`;/, target);
+		changed = true;
 	}
+	if (changed) writeFileSync(oauthPagePath, source, "utf8");
 }
 
 const alphaHubAuthPath = findPackageRoot("@companion-ai/alpha-hub")
