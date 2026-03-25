@@ -3,6 +3,7 @@ import { writeFileSync } from "node:fs";
 
 import { readJson } from "../pi/settings.js";
 import { promptChoice, promptText } from "../setup/prompts.js";
+import { openUrl } from "../system/open-url.js";
 import { printInfo, printSection, printSuccess, printWarning } from "../ui/terminal.js";
 import {
 	buildModelStatusSnapshotFromRecords,
@@ -126,7 +127,13 @@ export async function loginModelProvider(authPath: string, providerId?: string, 
 	await authStorage.login(provider.id, {
 		onAuth: (info: { url: string; instructions?: string }) => {
 			printSection(`Login: ${provider.name ?? provider.id}`);
-			printInfo(`Open this URL: ${info.url}`);
+			const opened = openUrl(info.url);
+			if (opened) {
+				printInfo("Opened the login URL in your browser.");
+			} else {
+				printWarning("Couldn't open your browser automatically.");
+			}
+			printInfo(`Auth URL: ${info.url}`);
 			if (info.instructions) {
 				printInfo(info.instructions);
 			}

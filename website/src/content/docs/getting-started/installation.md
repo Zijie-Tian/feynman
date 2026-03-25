@@ -41,7 +41,7 @@ On Windows:
 & ([scriptblock]::Create((irm https://feynman.is/install.ps1))) -Version stable
 ```
 
-You can also pin an exact version by replacing `stable` with a version such as `0.2.13`.
+You can also pin an exact version by replacing `stable` with a version such as `0.2.14`.
 
 ## pnpm
 
