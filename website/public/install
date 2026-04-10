@@ -177,11 +177,7 @@ warn_command_conflict() {
     step "Run now: export PATH=\"$INSTALL_BIN_DIR:\$PATH\" && hash -r && feynman"
     step "Or launch directly: $expected_path"
 
-    case "$resolved_path" in
-      *"/node_modules/@companion-ai/feynman/"* | *"/node_modules/.bin/feynman")
-        step "If that path is an old global npm install, remove it with: npm uninstall -g @companion-ai/feynman"
-        ;;
-    esac
+    step "If that path is an old package-manager install, remove it or put $INSTALL_BIN_DIR first on PATH."
   fi
 }
 
@@ -264,8 +260,8 @@ This usually means the release exists, but not all platform bundles were uploade
 
 Workarounds:
   - try again after the release finishes publishing
-  - install via pnpm instead: pnpm add -g @companion-ai/feynman
-  - install via bun instead: bun add -g @companion-ai/feynman
+  - pass the latest published version explicitly, e.g.:
+    curl -fsSL https://feynman.is/install | bash -s -- 0.2.16
 EOF
   exit 1
 fi

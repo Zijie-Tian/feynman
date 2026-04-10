@@ -27,7 +27,7 @@ irm https://feynman.is/install.ps1 | iex
 
 The one-line installer fetches the latest tagged release. To pin a version, pass it explicitly, for example `curl -fsSL https://feynman.is/install | bash -s -- 0.2.17`.
 
-If you install via `pnpm` or `bun` instead of the standalone bundle, Feynman requires Node.js `20.19.0` or newer.
+The installer downloads a standalone native bundle with its own Node.js runtime.
 
 Local models are supported through the custom-provider flow. For Ollama, run `feynman setup`, choose `Custom provider (baseUrl + API key)`, use `openai-completions`, and point it at `http://localhost:11434/v1`.
 

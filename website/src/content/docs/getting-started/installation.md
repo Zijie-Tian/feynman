@@ -1,11 +1,11 @@
 ---
 title: Installation
-description: Install Feynman on macOS, Linux, or Windows using curl, pnpm, or bun.
+description: Install Feynman on macOS, Linux, or Windows using the standalone installer.
 section: Getting Started
 order: 1
 ---
 
-Feynman ships as a standalone runtime bundle for macOS, Linux, and Windows, and as a package-manager install for environments where Node.js is already installed. The recommended approach is the one-line installer, which downloads a prebuilt native bundle with zero external runtime dependencies.
+Feynman ships as a standalone runtime bundle for macOS, Linux, and Windows. The one-line installer downloads a prebuilt native bundle with zero external runtime dependencies.
 
 ## One-line installer (recommended)
 
@@ -17,7 +17,7 @@ curl -fsSL https://feynman.is/install | bash
 
 The installer detects your OS and architecture automatically. On macOS it supports both Intel and Apple Silicon. On Linux it supports x64 and arm64. The launcher is installed to `~/.local/bin`, the bundled runtime is unpacked into `~/.local/share/feynman`, and your `PATH` is updated when needed.
 
-If you previously installed Feynman via `npm`, `pnpm`, or `bun` and still see local Node.js errors after a curl install, your shell is probably still resolving the older global binary first. Run `which -a feynman`, then `hash -r`, or launch the standalone shim directly with `~/.local/bin/feynman`.
+If you previously installed Feynman through a package manager and still see local Node.js errors after a curl install, your shell is probably still resolving the older global binary first. Run `which -a feynman`, then `hash -r`, or launch the standalone shim directly with `~/.local/bin/feynman`.
 
 On **Windows**, open PowerShell as Administrator and run:
 
@@ -70,36 +70,6 @@ On Windows:
 ```powershell
 & ([scriptblock]::Create((irm https://feynman.is/install.ps1))) -Version 0.2.17
 ```
-
-## pnpm
-
-If you already have Node.js `20.19.0` or newer installed, you can install Feynman globally via `pnpm`:
-
-```bash
-pnpm add -g @companion-ai/feynman
-```
-
-Or run it directly without installing:
-
-```bash
-pnpm dlx @companion-ai/feynman
-```
-
-## bun
-
-`bun add -g` and `bunx` still use your local Node runtime for Feynman itself, so the same Node.js `20.19.0+` requirement applies.
-
-```bash
-bun add -g @companion-ai/feynman
-```
-
-Or run it directly without installing:
-
-```bash
-bunx @companion-ai/feynman
-```
-
-Both package-manager distributions ship the same core application but depend on Node.js being present on your system. The standalone installer is preferred because it bundles its own Node runtime and works without a separate Node installation.
 
 ## Post-install setup
 
