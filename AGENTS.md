@@ -26,6 +26,16 @@ Keep this file focused on cross-agent repo conventions:
 
 Do **not** restate per-agent prompt text here unless there is a repo-wide constraint that applies to all agents.
 
+## Local build and CLI handoff
+
+- After code changes that affect CLI startup, runtime patching, model selection, or packaged dependencies, validate from the repo root with `npm test` and `npm run build` before handoff.
+- For local "use this branch as my global `feynman`" development, prefer a thin wrapper in `~/.local/bin/feynman` over `npm link`. The wrapper should execute `node <repo>/bin/feynman.js "$@"`, and `~/.local/bin` should come before Node's global bin directory in `PATH`.
+- Prefer the wrapper approach because `npm link` can resolve transitive dependencies through global `node_modules`, which may diverge from the repo-local dependency tree and produce startup-only failures that do not reproduce from the checkout itself.
+- After setting up branch-linked CLI usage, verify both `feynman --version` and `feynman --help`, not just `node bin/feynman.js --version`.
+- Do not commit home-directory wrappers, shell-profile edits, or one-off local dependency repairs. Only commit repo changes required to make the checkout build and run correctly.
+- Current guardrail from the `tzj/research` branch: executable discovery in `src/system/executables.ts` and `scripts/patch-embedded-pi.mjs` must avoid login-shell probing such as `sh -lc 'command -v ...'`. Use a non-login lookup instead, because broken profile snippets can make startup falsely report that `npm`, `pandoc`, or other tools are missing.
+- If local startup fails with `The requested module './auth.js' does not provide an export named 'getValidToken'`, treat that first as a corrupted local `@companion-ai/alpha-hub` install or mixed dependency state, not as proof that the branch logic regressed.
+
 ## Output conventions
 
 - Research outputs go in `outputs/`.
