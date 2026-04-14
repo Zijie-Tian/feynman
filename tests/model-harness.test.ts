@@ -8,6 +8,54 @@ import { resolveInitialPrompt } from "../src/cli.js";
 import { buildModelStatusSnapshotFromRecords, chooseRecommendedModel } from "../src/model/catalog.js";
 import { resolveModelProviderForCommand, setDefaultModelSpec } from "../src/model/commands.js";
 
+const MODEL_AUTH_ENV_VARS = [
+	"AI_GATEWAY_API_KEY",
+	"ANTHROPIC_API_KEY",
+	"ANTHROPIC_AUTH_TOKEN",
+	"AWS_ACCESS_KEY_ID",
+	"AWS_DEFAULT_REGION",
+	"AWS_PROFILE",
+	"AWS_REGION",
+	"AWS_SECRET_ACCESS_KEY",
+	"AWS_SESSION_TOKEN",
+	"AZURE_OPENAI_API_KEY",
+	"CEREBRAS_API_KEY",
+	"GEMINI_API_KEY",
+	"GROQ_API_KEY",
+	"HF_TOKEN",
+	"KIMI_API_KEY",
+	"MINIMAX_API_KEY",
+	"MINIMAX_CN_API_KEY",
+	"MISTRAL_API_KEY",
+	"OPENAI_API_KEY",
+	"OPENCODE_API_KEY",
+	"OPENROUTER_API_KEY",
+	"XAI_API_KEY",
+	"ZAI_API_KEY",
+] as const;
+
+let previousModelAuthEnv = new Map<string, string | undefined>();
+
+test.beforeEach(() => {
+	previousModelAuthEnv = new Map(
+		MODEL_AUTH_ENV_VARS.map((envVar) => {
+			const value = process.env[envVar];
+			delete process.env[envVar];
+			return [envVar, value];
+		}),
+	);
+});
+
+test.afterEach(() => {
+	for (const [envVar, value] of previousModelAuthEnv) {
+		if (value === undefined) {
+			delete process.env[envVar];
+		} else {
+			process.env[envVar] = value;
+		}
+	}
+});
+
 function createAuthPath(contents: Record<string, unknown>): string {
 	const root = mkdtempSync(join(tmpdir(), "feynman-auth-"));
 	const authPath = join(root, "auth.json");
