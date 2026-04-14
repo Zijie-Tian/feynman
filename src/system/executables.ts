@@ -48,7 +48,12 @@ function parseExecutablePath(stdout: string): string | undefined {
 }
 
 function executableCommand(name: string): { command: string; args: string[] } {
-	return isWindows ? { command: "cmd", args: ["/c", `where ${name}`] } : { command: "sh", args: ["-c", `command -v ${name}`] };
+	return isWindows
+		? { command: "cmd", args: ["/c", `where ${name}`] }
+		// Avoid login shells here. Some machines source broken profile snippets in
+		// `sh -l`, which would make executable discovery fail before the command
+		// lookup even runs.
+		: { command: "sh", args: ["-c", 'command -v "$1"', "sh", name] };
 }
 
 export function resolveExecutable(name: string, fallbackPaths: string[] = []): string | undefined {
