@@ -45,7 +45,10 @@ export function resolveExecutable(name: string, fallbackPaths: string[] = []): s
 				encoding: "utf8",
 				stdio: ["ignore", "pipe", "ignore"],
 			})
-		: spawnSync("sh", ["-lc", `command -v ${name}`], {
+		// Avoid login shells here. Some machines source broken profile snippets in
+		// `sh -l`, which would make executable discovery fail before the command
+		// lookup even runs.
+		: spawnSync("sh", ["-c", 'command -v "$1"', "sh", name], {
 				encoding: "utf8",
 				stdio: ["ignore", "pipe", "ignore"],
 			});

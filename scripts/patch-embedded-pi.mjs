@@ -199,7 +199,10 @@ function resolveExecutable(name, fallbackPaths = []) {
 				encoding: "utf8",
 				stdio: ["ignore", "pipe", "ignore"],
 			})
-		: spawnSync("sh", ["-lc", `command -v ${name}`], {
+		// Avoid login shells here. Some environments source broken profile
+		// fragments in `sh -l`, which can make discovery fail before `command -v`
+		// ever runs.
+		: spawnSync("sh", ["-c", 'command -v "$1"', "sh", name], {
 				encoding: "utf8",
 				stdio: ["ignore", "pipe", "ignore"],
 			});
