@@ -6,6 +6,7 @@ import { registerFeynmanModelCommand } from "./research-tools/feynman-model.js";
 import { installFeynmanHeader } from "./research-tools/header.js";
 import { registerHelpCommand } from "./research-tools/help.js";
 import { registerInitCommand, registerOutputsCommand } from "./research-tools/project.js";
+import { registerLogoToggle } from "./research-tools/logo-toggle.js";
 import { registerServiceTierControls } from "./research-tools/service-tier.js";
 
 export default function researchTools(pi: ExtensionAPI): void {
@@ -21,6 +22,7 @@ export default function researchTools(pi: ExtensionAPI): void {
 	registerFeynmanModelCommand(pi);
 	registerHelpCommand(pi);
 	registerInitCommand(pi);
+	registerLogoToggle(pi);
 	registerOutputsCommand(pi);
 	registerServiceTierControls(pi);
 }
