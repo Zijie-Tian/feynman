@@ -96,6 +96,11 @@ export function readJson(path: string): Record<string, unknown> {
 	}
 }
 
+export function readShowLogoSetting(settingsPath: string): boolean {
+	const settings = readJson(settingsPath);
+	return settings.showLogo !== false;
+}
+
 export function normalizeFeynmanSettings(
 	settingsPath: string,
 	bundledSettingsPath: string,
@@ -123,6 +128,9 @@ export function normalizeFeynmanSettings(
 	}
 	if (settings.editorPaddingX === undefined) {
 		settings.editorPaddingX = 1;
+	}
+	if (settings.showLogo === undefined) {
+		settings.showLogo = true;
 	}
 	settings.theme = "feynman";
 	settings.quietStartup = true;

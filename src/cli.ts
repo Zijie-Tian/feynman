@@ -27,7 +27,7 @@ import {
 	normalizeOptionalPackagePresetName,
 	resolvePackageUpdateSources,
 } from "./pi/package-presets.js";
-import { normalizeFeynmanSettings, normalizeThinkingLevel, parseModelSpec, type ThinkingLevel } from "./pi/settings.js";
+import { normalizeFeynmanSettings, normalizeThinkingLevel, parseModelSpec, readShowLogoSetting, type ThinkingLevel } from "./pi/settings.js";
 import { applyFeynmanPackageManagerEnv } from "./pi/runtime.js";
 import { getConfiguredServiceTier, normalizeServiceTier, setConfiguredServiceTier } from "./model/service-tier.js";
 import {
@@ -62,22 +62,25 @@ function printHelpLine(usage: string, description: string): void {
 	console.log(`  ${SAGE}${usage}${RESET}${" ".repeat(padding)}${ASH}${description}${RESET}`);
 }
 
-function printHelp(appRoot: string): void {
+function printHelp(appRoot: string, settingsPath: string): void {
 	const workflowCommands = readPromptSpecs(appRoot).filter(
 		(command) => command.section === "Research Workflows" && command.topLevelCli,
 	);
+	const showLogo = readShowLogoSetting(settingsPath);
 
-	printAsciiHeader([
-		"Research-first agent shell built on Pi.",
-		"Use `feynman setup` first if this is a new machine.",
-	]);
+	if (showLogo) {
+		printAsciiHeader([
+			"Research-first agent shell built on Pi.",
+			"Use `feynman setup` first if this is a new machine.",
+		]);
 
-	printSection("Getting Started");
-	printInfo("feynman");
-	printInfo("feynman setup");
-	printInfo("feynman doctor");
-	printInfo("feynman model");
-	printInfo("feynman search status");
+		printSection("Getting Started");
+		printInfo("feynman");
+		printInfo("feynman setup");
+		printInfo("feynman doctor");
+		printInfo("feynman model");
+		printInfo("feynman search status");
+	}
 
 	printSection("Commands");
 	for (const section of cliCommandSections) {
@@ -91,13 +94,15 @@ function printHelp(appRoot: string): void {
 		printHelpLine(formatCliWorkflowUsage(command), command.description);
 	}
 
-	printSection("Legacy Flags");
-	for (const flag of legacyFlags) {
-		printHelpLine(flag.usage, flag.description);
-	}
+	if (showLogo) {
+		printSection("Legacy Flags");
+		for (const flag of legacyFlags) {
+			printHelpLine(flag.usage, flag.description);
+		}
 
-	printSection("REPL");
-	printInfo("Inside the REPL, slash workflows come from the live prompt-template and extension command set.");
+		printSection("REPL");
+		printInfo("Inside the REPL, slash workflows come from the live prompt-template and extension command set.");
+	}
 }
 
 async function handleAlphaCommand(action: string | undefined): Promise<void> {
@@ -500,11 +505,6 @@ export async function main(): Promise<void> {
 		},
 	});
 
-	if (values.help) {
-		printHelp(appRoot);
-		return;
-	}
-
 	if (values.version) {
 		if (feynmanVersion) {
 			console.log(feynmanVersion);
@@ -520,6 +520,11 @@ export async function main(): Promise<void> {
 	const { defaultThinkingLevel, launchThinkingLevel } = resolveThinkingConfig(values.thinking ?? process.env.FEYNMAN_THINKING);
 
 	normalizeFeynmanSettings(feynmanSettingsPath, bundledSettingsPath, defaultThinkingLevel, feynmanAuthPath);
+
+	if (values.help) {
+		printHelp(appRoot, feynmanSettingsPath);
+		return;
+	}
 
 	if (values.doctor) {
 		runDoctor({
@@ -555,7 +560,7 @@ export async function main(): Promise<void> {
 
 	const [command, ...rest] = positionals;
 	if (command === "help") {
-		printHelp(appRoot);
+		printHelp(appRoot, feynmanSettingsPath);
 		return;
 	}
 
