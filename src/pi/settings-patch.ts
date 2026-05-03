@@ -56,7 +56,7 @@ export function patchPiSettingsShowLogo(appRoot: string): boolean {
 		},
 	]) || changed;
 
-	// 2. Patch interactive-mode: wire showLogo into showSettingsSelector
+	// 2. Patch interactive-mode: wire showLogo into showSettingsSelector and startup header
 	changed = patchFile(interactiveModePath, [
 		{
 			search: `                quietStartup: this.settingsManager.getQuietStartup(),
@@ -79,6 +79,11 @@ export function patchPiSettingsShowLogo(appRoot: string): boolean {
                 },
                 onDoubleEscapeActionChange: (action) => {`,
 			guard: "onShowLogoChange",
+		},
+		{
+			search: `            const logo = theme.bold(theme.fg("accent", APP_NAME)) + theme.fg("dim", \` v\${this.version}\`);`,
+			replace: `            const logo = this.settingsManager.getShowLogo() ? theme.bold(theme.fg("accent", APP_NAME)) + theme.fg("dim", \` v\${this.version}\`) : "";`,
+			guard: "getShowLogo() ? theme.bold",
 		},
 	]) || changed;
 
