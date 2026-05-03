@@ -242,6 +242,33 @@ test("chooseRecommendedModel prefers MiniMax M2.7 over highspeed when that is th
 	}
 });
 
+test("chooseRecommendedModel prefers kimi-for-coding when Kimi Coding is the authenticated provider", () => {
+	const envKeys = ["ANTHROPIC_API_KEY", "OPENAI_API_KEY", "GOOGLE_API_KEY", "GEMINI_API_KEY", "OPENROUTER_API_KEY"];
+	const savedEnv = Object.fromEntries(envKeys.map((key) => [key, process.env[key]]));
+
+	for (const key of envKeys) {
+		delete process.env[key];
+	}
+
+	try {
+		const authPath = createAuthPath({
+			"kimi-coding": { type: "api_key", key: "kimi-test-key" },
+		});
+
+		const recommendation = chooseRecommendedModel(authPath);
+
+		assert.equal(recommendation?.spec, "kimi-coding/kimi-for-coding");
+	} finally {
+		for (const [key, value] of Object.entries(savedEnv)) {
+			if (value === undefined) {
+				delete process.env[key];
+			} else {
+				process.env[key] = value;
+			}
+		}
+	}
+});
+
 test("resolveInitialPrompt maps top-level research commands to Pi slash workflows", () => {
 	const workflows = new Set([
 		"lit",
