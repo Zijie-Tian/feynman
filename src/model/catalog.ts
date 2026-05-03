@@ -109,6 +109,14 @@ const RESEARCH_MODEL_PREFERENCES = [
 		reason: "good fallback when MiniMax is the available research model",
 	},
 	{
+		spec: "kimi-coding/kimi-for-coding",
+		reason: "Kimi Coding Plan stable ID, auto-maps to latest backend model",
+	},
+	{
+		spec: "kimi-coding/k2p6",
+		reason: "Kimi K2.6 with strong reasoning for coding and research tasks",
+	},
+	{
 		spec: "kimi-coding/kimi-k2-thinking",
 		reason: "good fallback when Kimi is the available research model",
 	},
