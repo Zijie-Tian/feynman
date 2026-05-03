@@ -1,13 +1,16 @@
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 
-function patchFile(path: string, patches: Array<{ search: string; replace: string }>): boolean {
+function patchFile(path: string, patches: Array<{ search: string; replace: string; guard?: string }>): boolean {
 	if (!existsSync(path)) {
 		return false;
 	}
 	let source = readFileSync(path, "utf8");
 	let changed = false;
-	for (const { search, replace } of patches) {
+	for (const { search, replace, guard } of patches) {
+		if (guard && source.includes(guard)) {
+			continue;
+		}
 		if (source.includes(search)) {
 			source = source.replace(search, replace);
 			changed = true;
@@ -29,17 +32,7 @@ export function patchPiSettingsShowLogo(appRoot: string): boolean {
 	let changed = false;
 
 	// 1. Patch SettingsManager: add getShowLogo / setShowLogo
-	changed ||= patchFile(settingsManagerPath, [
-		{
-			search: `    getCollapseChangelog() {
-        return this.settings.collapseChangelog ?? false;
-    }
-    setCollapseChangelog(collapse) {`,
-			replace: `    getCollapseChangelog() {
-        return this.settings.collapseChangelog ?? false;
-    }
-    setCollapseChangelog(collapse) {`,
-		},
+	changed = patchFile(settingsManagerPath, [
 		{
 			search: `    setCollapseChangelog(collapse) {
         this.globalSettings.collapseChangelog = collapse;
@@ -59,17 +52,19 @@ export function patchPiSettingsShowLogo(appRoot: string): boolean {
         this.markModified("showLogo");
         this.save();
     }`,
+			guard: "getShowLogo()",
 		},
-	]);
+	]) || changed;
 
 	// 2. Patch interactive-mode: wire showLogo into showSettingsSelector
-	changed ||= patchFile(interactiveModePath, [
+	changed = patchFile(interactiveModePath, [
 		{
 			search: `                quietStartup: this.settingsManager.getQuietStartup(),
                 clearOnShrink: this.settingsManager.getClearOnShrink(),`,
 			replace: `                quietStartup: this.settingsManager.getQuietStartup(),
                 showLogo: this.settingsManager.getShowLogo(),
                 clearOnShrink: this.settingsManager.getClearOnShrink(),`,
+			guard: "showLogo: this.settingsManager.getShowLogo()",
 		},
 		{
 			search: `                onQuietStartupChange: (enabled) => {
@@ -83,11 +78,12 @@ export function patchPiSettingsShowLogo(appRoot: string): boolean {
                     this.settingsManager.setShowLogo(enabled);
                 },
                 onDoubleEscapeActionChange: (action) => {`,
+			guard: "onShowLogoChange",
 		},
-	]);
+	]) || changed;
 
 	// 3. Patch settings-selector: add show-logo toggle
-	changed ||= patchFile(settingsSelectorPath, [
+	changed = patchFile(settingsSelectorPath, [
 		{
 			search: `            {
                 id: "quiet-startup",
@@ -110,10 +106,14 @@ export function patchPiSettingsShowLogo(appRoot: string): boolean {
                 currentValue: config.showLogo ? "true" : "false",
                 values: ["true", "false"],
             },`,
+			guard: `"show-logo"`,
 		},
 		{
 			search: `                case "quiet-startup":
                     callbacks.onQuietStartupChange(newValue === "true");
+                    break;
+                case "install-telemetry":
+                    callbacks.onEnableInstallTelemetryChange(newValue === "true");
                     break;
                 case "double-escape-action":`,
 			replace: `                case "quiet-startup":
@@ -122,9 +122,13 @@ export function patchPiSettingsShowLogo(appRoot: string): boolean {
                 case "show-logo":
                     callbacks.onShowLogoChange(newValue === "true");
                     break;
+                case "install-telemetry":
+                    callbacks.onEnableInstallTelemetryChange(newValue === "true");
+                    break;
                 case "double-escape-action":`,
+			guard: `case "show-logo":`,
 		},
-	]);
+	]) || changed;
 
 	return changed;
 }
